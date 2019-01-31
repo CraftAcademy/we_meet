@@ -22,7 +22,7 @@ const user = {
 //     page = await browser.newPage()
 // })
 
-describe('Registration', () => {
+describe('Sign up', () => {
   beforeAll(async () => {
     jest.setTimeout(10000);
     await page.goto(appURL);
