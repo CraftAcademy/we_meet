@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 
 class SignUpForm extends Component {
   constructor(props) {
@@ -9,6 +10,9 @@ class SignUpForm extends Component {
       email: '',
       password: ''
     }
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   validateForm() {
@@ -20,19 +24,58 @@ class SignUpForm extends Component {
     )
   }
 
-  handleChange = event => {
-    this.setState({
-      [event.target.id]: event.target.value
-    });
+  handleChange(event) {
+    this.setState({value: event.target.value});
   }
 
-  handleSubmit = event => {
-    event.preventDefault();
+  handleSubmit(event) {  
+    event.preventDefault();   // tells the browser prevent default behavior (which is??). Here you want the form to perform the event function instead of its default  action.
+    const apiUrl = 'http://localhost:3000'
+    const path = apiUrl + '/auth';
+    return new Promise((resolve, reject) => {
+        axios.post(path, {
+            email: this.state.email,
+            password: this.state.password,
+            password_confirmation: this.state.password
+        })
+            .then(response => {
+                console.log(response);
+                debugger
+                sessionStorage.setItem('current_user', JSON.stringify({id: response.data.data.id}));
+                this.storeAuthHeaders(response).then(() => {
+                    resolve({
+                        authenticated: true
+                    })
+                });
+            })
+            .catch(error => {
+                reject(error)
+            });
+    })
   }
+
+  storeAuthHeaders({headers}) {
+    return new Promise((resolve) => {
+        const uid = headers['uid'],
+            client = headers['client'],
+            accessToken = headers['access-token'],
+            expiry = headers['expiry'];
+
+        sessionStorage.setItem('credentials', JSON.stringify({
+            uid: uid,
+            client: client,
+            access_token: accessToken,
+            expiry: expiry,
+            token_type: 'Bearer'
+        }));
+
+        resolve(true)
+    })
+  };
 
   render() {
     return (
-      <div className="signup_form">
+      <div className="signup-form">
           <form onSubmit={this.handleSubmit}>
             <div>
               <h2>Sign up</h2>
@@ -59,6 +102,7 @@ class SignUpForm extends Component {
             </div>
 
             <button type="submit" block bsSize="large" disabled={!this.validateForm()}>Sign up</button>
+
           </form>
       </div>
     );
