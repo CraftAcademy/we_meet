@@ -1,35 +1,31 @@
-require('../__mocks__/registrationMock')
-
-const user = {
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john@mail.com',
-  password: 'password',
-}
+// require('../__mocks__/eventsMock')
 
 describe('Registration', () => {
+  const user = {
+    firstName: 'John',
+    lastName: 'Dhoe',
+    email: 'johneeee1@mail.com',
+    password: 'password',
+  }
+
   beforeAll(async () => {
     jest.setTimeout(10000);
-    await page.goto(appURL);
+    await page.goto(appURL, {
+      timeout: 60000,
+      waitUntil: ['domcontentloaded', 'networkidle0', 'networkidle2']
+    });
   });
 
   it('visitors can sign up for an account', async () => {
-    // await page.goto(routes.public.register);
-    await page.waitForSelector('.signup_form');
     await page.type('input[name=first_name]', user.firstName);
     await page.type('input[name=last_name]', user.lastName);
     await page.type('input[name=email]', user.email);
     await page.type('input[name=password]', user.password);
-    await page.click('button[type=submit]');
+    await page.type('input[name=password_confirmation]', user.password);
+
+
+    await page.click('input[type=submit]', {delay: 1000});
     await expect(page).toMatch('You are now signed up!')
   });
 
-//   it('confirms registration', async () => {   
-//     await expect(page).toMatch('You are now signed up!')
-//   })
-// })
-
-// This function occurs after the result of each tests, it closes the browser
-// afterAll(() => {
-//   browser.close()
-// })
+});
