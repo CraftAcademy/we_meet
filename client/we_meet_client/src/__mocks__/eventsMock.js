@@ -72,8 +72,9 @@ beforeAll(async () => {
             //     origin: undefined, // remove "origin" header
             // });
             // await jestPuppeteer.debug()
-            await interceptedRequest.respond(responses[endpoint]);
             console.log(`mmm ${interceptedRequest.resourceType()} response from: ${interceptedRequest.url()}`)
+
+            await interceptedRequest.respond(responses[endpoint]);
 
         } else {
             interceptedRequest.continue();
