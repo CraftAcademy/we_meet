@@ -50,6 +50,17 @@ RSpec.describe Event, type: :model do
 
   end
 
+  describe 'Image attachment' do
+    let(:image){ File.open(fixture_path + '/rock1.png')}
+
+     it 'can be attached to event' do
+      subject.image.attach(io: image, 
+                          filename: 'attachment_1.png', 
+                          content_type: 'image/png')
+      expect(subject.image).to be_attached
+    end
+  end
+
   describe 'Factory' do
     it 'is valid' do
       expect(create(:event)).to be_valid
