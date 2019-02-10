@@ -7,6 +7,7 @@ import axios from "axios";
 import LoginForm from './LoginForm'
 import SignUpForm from './SignUpForm'
 import CreateGroup from '../../Groups/CreateGroup'
+import SendEmail from '../../Groups/SendEmail'
 
 // signUpHandler
 
@@ -64,6 +65,15 @@ class AppControl extends Component {
     this.setState({ displayCreateGroupForm: false })
   }
 
+
+  displaySendEmailForm() {
+    this.setState({ displaySendEmailForm: true })
+  }
+
+  hideSendEmailForm() {
+    this.setState({ displaySendEmailForm: false })
+  }
+
   async createGroup(group) {
 
     const credentials = {
@@ -78,10 +88,34 @@ class AppControl extends Component {
 
   }
 
+  async sendEmail(email) {
+
+    const credentials = {
+      'access-token': localStorage.getItem('access-token'),
+      'token-type': localStorage.getItem('token-type'),
+      'client': localStorage.getItem('client'),
+      'expiry': localStorage.getItem('expiry'),
+      'uid': localStorage.getItem('uid'),
+    }
+    let response = await axios.post('http://localhost:3000/groups/#{group.id}/notifications', { email }, { headers: credentials })
+    this.setState({ navBarNotification: response.data.message, displaySendEmailForm: false })
+
+  }
+
+
   render() {
     const isSignedIn = this.props.isSignedIn;
-    let startNewGroupLink, logoutButton, profileLink, loginButton, registerButton, loginForm, signUpForm, groupForm
+    let sendEmailLink, startNewGroupLink, logoutButton, profileLink, loginButton, registerButton, loginForm, signUpForm, groupForm, sendEmail
     if (isSignedIn) {
+      sendEmailLink = (
+        <LinkButton
+          id="create-group"
+          onClick={this.displaySendEmailForm.bind(this)}
+          text="grey-darkest"
+          text-hocus="teal"
+          style={{ textDecoration: 'none' }}>
+          Send Email
+      </LinkButton>);
       startNewGroupLink = (
         <LinkButton
           id="create-group"
@@ -124,6 +158,14 @@ class AppControl extends Component {
           Sign up
         </OutlineButton>);
     }
+    if (this.state.displaySendEmailForm) {
+      let overlay = document.getElementById('overlay')
+      if (overlay) {
+        overlay.style.display = ''
+        document.getElementById('send-email-form').reset()
+      }
+      sendEmail = <SendEmail sendEmailHandler={this.sendEmail.bind(this)} hideFormHandler={this.hideSendEmailForm.bind(this)} />
+    };
 
     if (this.state.displayCreateGroupForm) {
       let overlay = document.getElementById('overlay')
@@ -157,6 +199,7 @@ class AppControl extends Component {
     return (
       <>
         <p style={{color: 'black'}}>{this.state.navBarNotification}</p>
+        {sendEmailLink}
         {startNewGroupLink}
         {profileLink}
         {logoutButton}
@@ -165,6 +208,7 @@ class AppControl extends Component {
         {loginForm}
         {signUpForm}
         {groupForm}
+        {sendEmail}
       </>
     );
   }
