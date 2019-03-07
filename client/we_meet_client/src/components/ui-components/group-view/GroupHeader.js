@@ -1,20 +1,74 @@
 import React, {Component} from "react";
-import moment from "moment";
 import { FillButton } from 'tailwind-react-ui';
 import axios from "axios";
+import EventForm from '../../Events/EventForm'
+import { connect } from 'react-redux';
 
 
+const mapStateToProps = (state) => {
+  return {
+    isSignedIn: state.reduxTokenAuth.currentUser.isSignedIn,
+    currentUser: state.reduxTokenAuth.currentUser
+  }
+}
 
 class GroupHeader extends Component {
+  state = {
+    showCreateEventForm: false,
+    navBarNotification: ''
+  }
 
   async joinGroup() {
-    const credentials = { 'access-token': localStorage.getItem('access-token'), 'token-type': localStorage.getItem('token-type'), 'client': localStorage.getItem('client'), 'expiry': localStorage.getItem('expiry'), 'uid': localStorage.getItem('uid'), }
-
+    const credentials = { 
+      'access-token': localStorage.getItem('access-token'), 
+      'token-type': localStorage.getItem('token-type'), 
+      'client': localStorage.getItem('client'), 
+      'expiry': localStorage.getItem('expiry'), 
+      'uid': localStorage.getItem('uid')
+    }
     const response = await axios.post(`http://localhost:3000/groups/${this.props.group.id}/memberships`, {}, { headers: credentials }) 
-    console.log(response)
   }
+
+  showCreateEventForm = () => {
+    this.setState({ showCreateEventForm: true })
+  }
+
+  hideCreateEventForm=() => {
+    this.setState({ showCreateEventForm: false })
+  }
+
+  createEventHandler = async(event) => {
+    const credentials = {
+     'access-token': localStorage.getItem('access-token'),
+     'token-type': localStorage.getItem('token-type'),
+     'client': localStorage.getItem('client'),
+     'expiry': localStorage.getItem('expiry'),
+     'uid': localStorage.getItem('uid'),
+    }
+    const response = await axios.post(`http://localhost:3000/groups/${this.props.group.id}/events`, { event }, { headers: credentials})
+    this.setState({ navBarNotification: response.data.message, showCreateEventForm: false })
+  }
+
+
   render() {
-    let group = this.props.group;
+    const isSignedIn = this.props.isSignedIn;
+    const currentUser = this.props.currentUser;
+    let group = this.props.group;    
+    let createEventLink, eventForm
+    
+    if (isSignedIn && currentUser.attributes.id === group.organizer.id) {
+      createEventLink = (
+        <FillButton
+          onClick={this.showCreateEventForm}
+          brand='secondary'
+          large
+          style={{ position:"absolute", right:"16.5rem", width:"300px", marginTop:"15rem", fontSize:"24px"}}
+        >
+          Create event
+        </FillButton>);
+    }
+
+    eventForm = this.state.showCreateEventForm && <EventForm hideCreateEventForm={ this.hideCreateEventForm} createEventHandler={this.createEventHandler}/>
 
     return (
       <>
@@ -66,15 +120,14 @@ class GroupHeader extends Component {
                 >
                   Join group
               </FillButton>
-              <FillButton
-                  brand='secondary'
-                  large
-                  style={{ position:"absolute", right:"16.5rem", width:"300px", marginTop:"15rem", fontSize:"24px"}}
-                >
-                  Create event
-              </FillButton>
+
+              { createEventLink }
+
+              { eventForm }
+              
+              { this.state.navBarNotification}
+
             </div>
-          {/* </div> */}
         </div>
       </>
     );
@@ -82,4 +135,4 @@ class GroupHeader extends Component {
   
 };
 
-export default GroupHeader;
+export default connect(mapStateToProps)(GroupHeader);

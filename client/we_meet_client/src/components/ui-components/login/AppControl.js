@@ -3,6 +3,7 @@ import { LinkButton, OutlineButton } from 'tailwind-react-ui';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+
 import axios from "axios";
 import LoginForm from './LoginForm'
 import SignUpForm from './SignUpForm'
@@ -44,7 +45,6 @@ class AppControl extends Component {
   hideSignUpForm() {
     this.setState({ displaySignUpForm: false })
   }
-
 
   handleLoginClick(e) {
     this.setState({ displayLoginForm: false })
